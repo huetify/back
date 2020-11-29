@@ -93,7 +93,7 @@ func (m *Manager) _checkAuthorization(r *http.Request, a parser.API) error {
 			return []byte(os.Getenv("HUETIFY_JWT_SECRET")), nil
 		})
 		if err != nil {
-			return err
+			return errors.New("you must be logged in")
 		}
 
 		claims, ok := tokenData.Claims.(jwt.MapClaims)
@@ -101,25 +101,30 @@ func (m *Manager) _checkAuthorization(r *http.Request, a parser.API) error {
 			return err
 		}
 
+		var stringRoles []string
+		for _, userRole := range claims["roles"].([]interface{}) {
+			stringRoles = append(stringRoles, userRole.(string))
+		}
+
 		var isGranted bool
 		for _, authorization := range a.Authorization {
 			if strings.ToLower(authorization) == "all" {
 				isGranted = true
 			}
-			for _, userRole := range strings.Split(claims["roles"].(string), ",") {
+			for _, userRole := range stringRoles {
 				if strings.ToLower(authorization) == strings.ToLower(userRole) {
 					isGranted = true
 				}
 			}
 		}
 		if !isGranted {
-			return errors.New("accès à la ressource non autorisé")
+			return errors.New("unauthorized access to the resource")
 		}
 
 		m.User.Token = token
-		m.User.Issuer = claims["issuer"].(string)
+		//m.User.Issuer = claims["issuer"].(string)
 		//m.User.Id = tokenData.Claims.Id
-		m.User.Roles = strings.Split(claims["roles"].(string), ",")
+		m.User.Roles = stringRoles
 		//m.User.ExpiresAt = tokenData.Claims.ExpiresAt
 	}
 	return nil

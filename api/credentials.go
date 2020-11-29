@@ -30,13 +30,13 @@ func (Handler) PostCredentials(ctx context.Context, m *manager.Manager, w http.R
 	}
 
 	var roles []string
-	for _, role := range []string{ "admin", "member" } {
+	for _, role := range []string{ "member" } {
 		roles = append(roles, role)
 	}
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"roles": roles,
-		"exp": time.Now().Add(time.Minute * time.Duration(120)).Unix(),
+		"exp": time.Now().Add(time.Minute * time.Duration(1)).Unix(),
 		})
 	token, err := t.SignedString([]byte(os.Getenv("HUETIFY_JWT_SECRET")))
 	if err != nil {
@@ -44,4 +44,12 @@ func (Handler) PostCredentials(ctx context.Context, m *manager.Manager, w http.R
 	}
 
 	return response.Success(m.DB, w, http.StatusCreated, CredentialsToken{ Token: token, TokenType: "bearer" })
+}
+
+/*
+	@Route("GET", "/credentials")
+	@Auth(["admin"])
+*/
+func (Handler) CheckCredentials(ctx context.Context, m *manager.Manager, w http.ResponseWriter) bool {
+	return response.Success(m.DB, w, http.StatusCreated, CredentialsToken{ TokenType: "bearer" })
 }
