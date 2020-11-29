@@ -1,6 +1,6 @@
 # huetify
-./back
-./router.json
+back
+router.json
 
 # Binaries for programs and plugins
 *.exe
