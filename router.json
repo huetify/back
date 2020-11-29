@@ -1,0 +1,24 @@
+[
+ {
+  "controller": "PostCredentials",
+  "routes": [
+   {
+    "method": "POST",
+    "route": "/credentials"
+   }
+  ],
+  "middlewares": {},
+  "validate": {
+   "payload": [
+    {
+     "key": "username",
+     "type": "string"
+    },
+    {
+     "key": "password",
+     "type": "string"
+    }
+   ]
+  }
+ }
+]
