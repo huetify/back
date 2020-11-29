@@ -113,8 +113,10 @@ func _noDirListing(h http.Handler) http.Handler {
 
 var defaultMiddleware []string
 
-func SetDefaultMiddleware (name string) {
-	defaultMiddleware = append(defaultMiddleware, name)
+func SetDefaultMiddleware (mw ...string) {
+	for _, name := range mw {
+		defaultMiddleware = append(defaultMiddleware, name)
+	}
 }
 
 func printHeader(port string) {

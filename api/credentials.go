@@ -4,6 +4,8 @@ import (
 	"context"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/huetify/back/internal/manager"
+	"github.com/huetify/back/internal/models/credentials"
+	"github.com/huetify/back/internal/models/user"
 	"github.com/huetify/back/internal/response"
 	"net/http"
 	"os"
@@ -21,25 +23,27 @@ type CredentialsToken struct {
 	@Payload("password", string)
 */
 func (Handler) PostCredentials(ctx context.Context, m *manager.Manager, w http.ResponseWriter) bool {
-	if m.Payload["username"].(string) != "admin" {
-		return response.Error(m.DB, w, http.StatusBadRequest, 3, "username is incorrect")
+	userID, err := credentials.CheckCredentials(
+		ctx,
+		m.DB,
+		m.Payload["username"].(string),
+		m.Payload["password"].(string),
+		)
+	if err != nil {
+		return response.Error(m.DB, w, http.StatusBadRequest, 3, "username or password is incorrect")
 	}
 
-	if m.Payload["password"].(string) != "admin" {
-		return response.Error(m.DB, w, http.StatusBadRequest, 4, "password is incorrect")
-	}
-
-	var roles []string
-	for _, role := range []string{ "member" } {
-		roles = append(roles, role)
+	usr, err := user.GetUser(ctx, m.DB, userID)
+	if err != nil {
+		return response.Error(m.DB, w, http.StatusInternalServerError, 4, err)
 	}
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"issuer": "huetify/api",
-		"id": 1,
-		"username": "admin",
-		"roles": roles,
-		"exp": time.Now().Add(time.Minute * time.Duration(1)).Unix(),
+		"id": usr.ID,
+		"username": usr.Username,
+		"roles": usr.Roles,
+		"exp": time.Now().Add(time.Minute * time.Duration(120)).Unix(),
 		})
 	token, err := t.SignedString([]byte(os.Getenv("HUETIFY_JWT_SECRET")))
 	if err != nil {
@@ -47,12 +51,4 @@ func (Handler) PostCredentials(ctx context.Context, m *manager.Manager, w http.R
 	}
 
 	return response.Success(m.DB, w, http.StatusCreated, CredentialsToken{ Token: token, TokenType: "bearer" })
-}
-
-/*
-	@Route("GET", "/credentials")
-	@Auth(["member"])
-*/
-func (Handler) CheckCredentials(ctx context.Context, m *manager.Manager, w http.ResponseWriter) bool {
-	return response.Success(m.DB, w, http.StatusCreated, CredentialsToken{ TokenType: "bearer" })
 }

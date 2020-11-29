@@ -21,6 +21,12 @@ func main() {
 		"HUETIFY_PORT",
 		"HUETIFY_JWT_SECRET",
 		"HUETIFY_DEBUG",
+		"HUETIFY_DB_DRIVER",
+		"HUETIFY_DB_HOST",
+		"HUETIFY_DB_PORT",
+		"HUETIFY_DB_USER",
+		"HUETIFY_DB_PASSWORD",
+		"HUETIFY_DB_NAME",
 		)
 	if err != nil {
 		log.Fatal(err)
@@ -28,7 +34,7 @@ func main() {
 	// Build API's Annotation
 	if len(os.Args) > 1 && os.Args[1] == "build" {
 		var routes []parser.API
-		err := annotation.Fetch("api", &routes, parser.ToAPI)
+		err = annotation.Fetch("api", &routes, parser.ToAPI)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -38,5 +44,7 @@ func main() {
 		}
 		os.Exit(0)
 	}
+	// Router configuration
+	router.SetDefaultMiddleware("HTTP", "DBStart", "DBStart")
 	router.Serve(os.Getenv("HUETIFY_PORT"), "router.json", api.Handler{}, middleware.Handler{})
 }

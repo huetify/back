@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -22,7 +23,6 @@ func Conn (
 	password string,
 	host string,
 	port string,
-	opts *sql.TxOptions,
 	) (*Instance, error) {
 	dataSourceName := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?parseTime=true",
@@ -50,7 +50,7 @@ func Conn (
 		db: conn,
 	}
 
-	err = i.Begin(ctx, opts)
+	err = i.Begin(ctx, &sql.TxOptions{ Isolation: sql.LevelDefault })
 	if err != nil {
 		return nil, err
 	}

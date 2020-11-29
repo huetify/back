@@ -42,7 +42,9 @@ func Error (db *dbm.Instance, w http.ResponseWriter, status int, errID int, err 
 		errorValue = errorText
 	}
 
-	fmt.Println(chalk.Redf("[ Error ] %s", errorText))
+	if status == http.StatusInternalServerError {
+		fmt.Println(chalk.Redf("[ Error ] %s", errorText))
+	}
 
 	failed := json.NewEncoder(w).Encode(&errorContent{ Type: errID, Message: errorValue })
 	if failed != nil {
