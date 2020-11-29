@@ -35,6 +35,9 @@ func (Handler) PostCredentials(ctx context.Context, m *manager.Manager, w http.R
 	}
 
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"issuer": "huetify/api",
+		"id": 1,
+		"username": "admin",
 		"roles": roles,
 		"exp": time.Now().Add(time.Minute * time.Duration(1)).Unix(),
 		})
@@ -48,7 +51,7 @@ func (Handler) PostCredentials(ctx context.Context, m *manager.Manager, w http.R
 
 /*
 	@Route("GET", "/credentials")
-	@Auth(["admin"])
+	@Auth(["member"])
 */
 func (Handler) CheckCredentials(ctx context.Context, m *manager.Manager, w http.ResponseWriter) bool {
 	return response.Success(m.DB, w, http.StatusCreated, CredentialsToken{ TokenType: "bearer" })

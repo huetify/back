@@ -26,8 +26,9 @@ type Manager struct {
 		Token 		string
 		Id        	int
 		Issuer    	string
+		Username 	string
 		Roles 		[]string
-		ExpiresAt 	int64
+		Exp		 	int
 	}
 	Param		map[string]interface{}
 	Query 		map[string]string
@@ -122,10 +123,10 @@ func (m *Manager) _checkAuthorization(r *http.Request, a parser.API) error {
 		}
 
 		m.User.Token = token
-		//m.User.Issuer = claims["issuer"].(string)
-		//m.User.Id = tokenData.Claims.Id
+		m.User.Issuer = claims["issuer"].(string)
+		m.User.Id = int(claims["id"].(float64))
 		m.User.Roles = stringRoles
-		//m.User.ExpiresAt = tokenData.Claims.ExpiresAt
+		m.User.Exp = int(claims["exp"].(float64))
 	}
 	return nil
 }
