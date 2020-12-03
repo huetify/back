@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/huetify/back/internal/manager"
 	"github.com/huetify/back/internal/models/install"
+	"github.com/huetify/back/internal/models/role"
 	"github.com/huetify/back/internal/models/user"
 	"github.com/huetify/back/internal/response"
 	"github.com/huetify/back/internal/utils"
@@ -38,7 +39,12 @@ func (Handler) Install(ctx context.Context, m *manager.Manager, w http.ResponseW
 		return response.Error(m.DB, w, http.StatusBadRequest, 6, "you need to choose a language")
 	}
 
-	err = user.PostUser(ctx, m.DB, m.Payload["username"].(string), m.Payload["password"].(string))
+	u, err := user.PostUser(ctx, m.DB, m.Payload["username"].(string), m.Payload["password"].(string))
+	if err != nil {
+		return response.Error(m.DB, w, http.StatusInternalServerError, 7, err)
+	}
+
+	err = role.PostUserRole(ctx, m.DB, u.ID, role.Admin)
 	if err != nil {
 		return response.Error(m.DB, w, http.StatusInternalServerError, 7, err)
 	}

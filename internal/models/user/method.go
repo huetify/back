@@ -28,11 +28,26 @@ WHERE
 	return
 }
 
-func PostUser(ctx context.Context, db *dbm.Instance, username, password string) (err error) {
+func PostUser(ctx context.Context, db *dbm.Instance, username, password string) (u User, err error) {
 	crypted, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return
 	}
-	_, err = db.Exec(ctx, `INSERT user(username, password) VALUES(?, ?)`, username, string(crypted))
+
+	res, err := db.Exec(ctx, `INSERT user(username, password) VALUES(?, ?)`, username, string(crypted))
+	if err != nil {
+		return
+	}
+
+	id, err := res.LastInsertId()
+	if err != nil {
+		return
+	}
+
+	u = User{
+		ID: int(id),
+		Username: username,
+	}
+
 	return
 }
