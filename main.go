@@ -1,11 +1,13 @@
 package main
 
 import (
+	"context"
 	"github.com/ermos/annotation"
 	"github.com/ermos/annotation/parser"
 	"github.com/ermos/dotenv"
 	"github.com/huetify/back/api"
 	"github.com/huetify/back/internal/middleware"
+	"github.com/huetify/back/internal/pipeline"
 	"github.com/huetify/back/internal/router"
 	"log"
 	"os"
@@ -43,6 +45,10 @@ func main() {
 			log.Fatal(err)
 		}
 		os.Exit(0)
+	}
+	// Pipelines
+	if err = pipeline.Run(context.Background()); err != nil {
+		log.Fatal(err)
 	}
 	// Router configuration
 	router.SetDefaultMiddleware("HTTP", "DBStart", "DBStart")
