@@ -65,7 +65,7 @@ func Success (db *dbm.Instance, w http.ResponseWriter, status int, success inter
 	}
 
 	if isNil(success) {
-		_, _ = fmt.Fprintf(w, "{}")
+		_, _ = fmt.Fprintf(w, "[]")
 		return true
 	}
 

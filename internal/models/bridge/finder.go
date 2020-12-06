@@ -32,10 +32,10 @@ func DiscoverBridges(ctx context.Context) ([]hue.DiscoverModel, error) {
 	return n, nil
 }
 
-func SetBridge(ctx context.Context, db *dbm.Instance, IPAddr string) error {
+func SetBridge(ctx context.Context, db *dbm.Instance, IPAddr string) (bi Instance, err error) {
 	for _, b := range Store {
 		if b.IPAddr == IPAddr {
-			return fmt.Errorf("%s is already logged", IPAddr)
+			return bi, fmt.Errorf("%s is already logged", IPAddr)
 		}
 	}
 
@@ -44,20 +44,33 @@ func SetBridge(ctx context.Context, db *dbm.Instance, IPAddr string) error {
 	})
 
 	if err := b.Fetch.Bridge(); err != nil {
-		return err
+		return bi, err
 	}
 
-	res, err := db.Exec(ctx, `INSERT INTO bridge(bridge_uid, ip_address, token) VALUES(?, ?, ?)`, b.Config.Bridgeid, IPAddr, b.Token)
+	res, err := db.Exec(
+		ctx,
+		`INSERT INTO bridge(bridge_uid, ip_address, name, token) VALUES(?, ?, ?, ?)`,
+		b.Config.Bridgeid,
+		IPAddr,
+		IPAddr,
+		b.Token,
+		)
 	if err != nil {
-		return err
+		return
 	}
 
 	id, err := res.LastInsertId()
 	if err != nil {
-		return err
+		return
 	}
 
 	Store[int(id)] = b
 
-	return nil
+	return Instance{
+		ID: int(id),
+		Name: IPAddr,
+		UID: b.Config.Bridgeid,
+		IPAddr: IPAddr,
+		Token: b.Token,
+	}, nil
 }

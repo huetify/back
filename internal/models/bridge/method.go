@@ -6,6 +6,11 @@ import (
 	"github.com/huetify/back/internal/dbm"
 )
 
+func GetBridgesInstance(ctx context.Context, db *dbm.Instance) (bs []Instance, err error){
+	err = db.GetAll(ctx, &bs, `SELECT * FROM bridge`)
+	return
+}
+
 func SetBridgesStore(ctx context.Context, db *dbm.Instance) error {
 	var bis []Instance
 
@@ -15,13 +20,9 @@ func SetBridgesStore(ctx context.Context, db *dbm.Instance) error {
 	}
 
 	for _, bi := range bis {
-		if !bi.Token.Valid {
-			continue
-		}
-
 		b := hue.Conn(bi.IPAddr, hue.BridgeOptions{
 			Debug: hue.DebugNone,
-			Token: bi.Token.String,
+			Token: bi.Token,
 		})
 
 		if err := b.Fetch.Bridge(); err != nil {
